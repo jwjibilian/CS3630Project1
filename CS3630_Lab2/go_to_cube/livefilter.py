@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 #!c:/Python35/python3.exe -u
+
 import asyncio
 import sys
 import cv2
@@ -8,26 +9,43 @@ import cozmo
 import time
 import os
 
-from cozmo.util import degrees, distance_mm, Speed, radians
-
-from glob import glob
-
-from find_cube import *
-
+from cozmo.util import degrees, distance_mm
 try:
-    from PIL import ImageDraw, ImageFont
+    # for Python2
+    from Tkinter import *   ## notice capitalized T in Tkinter
 except ImportError:
-    sys.exit('run `pip3 install --user Pillow numpy` to run this example')
-def nothing(x):
-    pass
+    # for Python3
+    from tkinter import *
 
-YELLOW_LOWER = np.array([9, 115, 151])
-YELLOW_UPPER = np.array([179, 215, 255])
+mainWindow = Tk()
 
-GREEN_LOWER = np.array([0,0,0])
-GREEN_UPPER = np.array([179, 255, 60])
+Label(mainWindow, text="Gain").grid(row=0)
+gain = Scale(mainWindow, from_=0, to=500,orient=HORIZONTAL)
+gain.grid(row=0,column=1)
 
-# Define a decorator as a subclass of Annotator; displays the keypoint
+Label(mainWindow, text="Exposure").grid(row=1)
+exposure = Scale(mainWindow, from_=0.1, to=4.0, orient=HORIZONTAL,resolution = 0.01)
+exposure.grid(row=1, column = 1)
+
+Label(mainWindow, text="Hue").grid(row=2)
+hue = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+hue.grid(row=2, column = 1)
+
+Label(mainWindow, text="Saturation").grid(row=3)
+saturation = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+saturation.grid(row=3, column = 1)
+
+Label(mainWindow, text="Value").grid(row=4)
+value = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+value.grid(row=4, column = 1)
+
+
+
+
+
+
+mainloop()
+
 class BoxAnnotator(cozmo.annotate.Annotator):
 
     cube = None
@@ -51,7 +69,6 @@ class BoxAnnotator(cozmo.annotate.Annotator):
             BoxAnnotator.cube = None
 
 
-
 async def run(robot: cozmo.robot.Robot):
 
     robot.world.image_annotator.annotation_enabled = False
@@ -61,11 +78,14 @@ async def run(robot: cozmo.robot.Robot):
     robot.camera.color_image_enabled = True
     robot.camera.enable_auto_exposure = True
 
-    gain,exposure,mode = 390,3,1
+
 
     try:
 
         while True:
+            gain, exposure, mode = 390, 3, 1
+
+
             event = await robot.world.wait_for(cozmo.camera.EvtNewRawCameraImage, timeout=30)   #get camera image
             if event.image is not None:
                 image = cv2.cvtColor(np.asarray(event.image), cv2.COLOR_BGR2RGB)
@@ -85,25 +105,20 @@ async def run(robot: cozmo.robot.Robot):
                 # Todo: Add Motion Here
                 ################################################################
                 await robot.set_head_angle(degrees(0)).wait_for_completed()
-#                look_around = robot.start_behavior(cozmo.behavior.BehaviorTypes.LookAroundInPlace)
-#                try:
-##                    cube = await robot.world.wait_for_observed_light_cube(timeout=30)
-##                    cube = find_cube(image, YELLOW_LOWER, YELLOW_UPPER)
-#                    await robot.world.wait_until_observe_num_objects(1, timeout=30)
-#                    print("Found cube: %s" % cube)
-#                except asyncio.TimeoutError:
-#                    print("Didn't find a cube")
-#                finally:
-#                    # whether we find it or not, we want to stop the behavior
-#                    look_around.stop()
-                if cube and cube[2] > 75:
-                    action = robot.drive_straight(distance_mm(50), Speed(50))
+                look_around = robot.start_behavior(cozmo.behavior.BehaviorTypes.LookAroundInPlace)
+                try:
+                    cube = await robot.world.wait_for_observed_light_cube(timeout=30)
+                    print("Found cube: %s" % cube)
+                except asyncio.TimeoutError:
+                    print("Didn't find a cube")
+                finally:
+                    # whether we find it or not, we want to stop the behavior
+                    look_around.stop()
+                if cube:
+                    action = robot.go_to_object(cube, distance_mm(50.0))
                     await action.wait_for_completed()
                     print("Completed action: result = %s" % action)
                     print("Done.")
-                else:
-                    action = robot.turn_in_place(radians(0.5))
-                    await action.wait_for_completed()
 
 
 
@@ -113,7 +128,6 @@ async def run(robot: cozmo.robot.Robot):
     except cozmo.RobotBusy as e:
         print(e)
     #cv2.destroyAllWindows()
-
 
 if __name__ == '__main__':
     cozmo.run_program(run, use_viewer = True, force_viewer_on_top = True)
