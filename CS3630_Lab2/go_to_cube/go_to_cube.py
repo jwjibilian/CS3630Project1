@@ -23,7 +23,7 @@ def nothing(x):
 
 #YELLOW_LOWER = np.array([9, 115, 151])
 #YELLOW_UPPER = np.array([179, 215, 255])
-YELLOW_LOWER = np.array([8, 140, 120])
+YELLOW_LOWER = np.array([8, 115, 85])
 YELLOW_UPPER = np.array([25, 240, 255])
 
 GREEN_LOWER = np.array([0,0,0])
@@ -98,7 +98,7 @@ async def run(robot: cozmo.robot.Robot):
 #                    action = robot.turn_in_place(radians(-0.1))
 #                    await action.wait_for_completed()
 #                elif cube and cube[2] < 120:
-#                    action = robot.drive_straight(distance_mm(10), Speed(60))
+#                    action = robot.drive_straight(distance_mm(30), Speed(1000), should_play_anim=False)
 #                    await action.wait_for_completed()
 #                elif cube and cube[2] >= 120:
 #                    print("stop")

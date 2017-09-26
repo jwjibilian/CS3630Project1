@@ -3,8 +3,8 @@ import numpy as np
 import time
 
 def filter_image(img, hsv_lower, hsv_upper):
-    img_filt = cv2.medianBlur(img, 5)
-    hsv = cv2.cvtColor(img_filt, cv2.COLOR_BGR2HSV)
+#    img_filt = cv2.medianBlur(img, 5)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, hsv_lower, hsv_upper)
     return mask
 
