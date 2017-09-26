@@ -8,7 +8,7 @@ import cozmo
 import time
 import os
 
-from cozmo.util import degrees, distance_mm
+from cozmo.util import degrees, distance_mm, Speed, radians
 
 from glob import glob
 
@@ -84,20 +84,25 @@ async def run(robot: cozmo.robot.Robot):
                 # Todo: Add Motion Here
                 ################################################################
                 await robot.set_head_angle(degrees(0)).wait_for_completed()
-                look_around = robot.start_behavior(cozmo.behavior.BehaviorTypes.LookAroundInPlace)
-                try:
-                    cube = await robot.world.wait_for_observed_light_cube(timeout=30)
-                    print("Found cube: %s" % cube)
-                except asyncio.TimeoutError:
-                    print("Didn't find a cube")
-                finally:
-                    # whether we find it or not, we want to stop the behavior
-                    look_around.stop()
-                if cube:
-                    action = robot.go_to_object(cube, distance_mm(50.0))
+#                look_around = robot.start_behavior(cozmo.behavior.BehaviorTypes.LookAroundInPlace)
+#                try:
+##                    cube = await robot.world.wait_for_observed_light_cube(timeout=30)
+##                    cube = find_cube(image, YELLOW_LOWER, YELLOW_UPPER)
+#                    await robot.world.wait_until_observe_num_objects(1, timeout=30)
+#                    print("Found cube: %s" % cube)
+#                except asyncio.TimeoutError:
+#                    print("Didn't find a cube")
+#                finally:
+#                    # whether we find it or not, we want to stop the behavior
+#                    look_around.stop()
+                if cube and cube[2] > 75:
+                    action = robot.drive_straight(distance_mm(50), Speed(50))
                     await action.wait_for_completed()
                     print("Completed action: result = %s" % action)
                     print("Done.")
+                else:
+                    action = robot.turn_in_place(radians(0.5))
+                    await action.wait_for_completed()
 
 
 

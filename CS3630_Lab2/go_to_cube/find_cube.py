@@ -12,6 +12,26 @@ def filter_image(img, hsv_lower, hsv_upper):
     ### You might need to change the parameter values to get better results
     ###############################################################################
 def detect_blob(mask):
+#    img = cv2.medianBlur(mask, 11)
+#
+#    # Set up the SimpleBlobdetector with default parameters with specific values.
+#    params = cv2.SimpleBlobDetector_Params()
+#
+#    _, threshold = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY_INV)
+#
+#    params.minThreshold = 10
+#    params.maxThreshold = 255
+#    params.filterByArea = True
+#    params.minArea = 1000
+#    params.filterByInertia = False
+#    params.filterByConvexity = False
+#
+#    # builds a blob detector with the given parameters
+#    detector = cv2.SimpleBlobDetector_create(params)
+#
+#    # use the detector to detect blobs.
+#    keypoints = detector.detect(threshold)
+
     img = cv2.medianBlur(mask, 9)
    # Set up the SimpleBlobdetector with default parameters.
     params = cv2.SimpleBlobDetector_Params()
