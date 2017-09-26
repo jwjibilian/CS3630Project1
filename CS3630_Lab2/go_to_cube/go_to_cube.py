@@ -70,6 +70,7 @@ async def run(robot: cozmo.robot.Robot):
             if event.image is not None:
                 image = cv2.cvtColor(np.asarray(event.image), cv2.COLOR_BGR2RGB)
 
+
                 if mode == 1:
                     robot.camera.enable_auto_exposure = True
                 else:

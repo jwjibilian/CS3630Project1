@@ -8,6 +8,7 @@ import cozmo
 import time
 import os
 import _thread
+import cv2
 
 from cozmo.util import degrees, distance_mm
 
@@ -29,15 +30,57 @@ except ImportError:
 def nothing(x):
     pass
 
-YELLOW_LOWER = np.array([9, 115, 151])
-YELLOW_UPPER = np.array([179, 215, 255])
+
 
 GREEN_LOWER = np.array([0,0,0])
 GREEN_UPPER = np.array([179, 255, 60])
 
 
 
+def filter_image(img, hsv_lower, hsv_upper):
 
+    # Modify mask
+    imgToBlur = cv2.medianBlur(img,5)
+    imagehsv = cv2.cvtColor(imgToBlur, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(imagehsv,hsv_lower,hsv_upper)
+    image2 = cv2.bitwise_and(255-img, 255-img, mask = mask)
+    #cv2.namedWindow( "imagex", cv2.WINDOW_NORMAL );
+    #cv2.imshow("imagex", image2)
+    #cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL );
+    #cv2.imshow("imagey",img)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    return mask
+
+
+def detect_blob(mask):
+    img = cv2.medianBlur(255 - mask, 9)
+    # cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL )
+    # cv2.imshow("imagey",img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    # Set up the SimpleBlobdetector with default parameters with specific values.
+    params = cv2.SimpleBlobDetector_Params()
+
+    params.filterByColor = True
+
+    params.filterByArea = True
+    params.minArea = 500
+
+    params.filterByConvexity = False
+    params.minConvexity = 0.7
+    params.filterByCircularity = False
+    params.minCircularity = 0
+
+    # builds a blob detector with the given parameters
+    detector = cv2.SimpleBlobDetector_create(params)
+
+    # use the detector to detect blobs.
+    keypoints = detector.detect(img)
+    print("keypoints", keypoints)
+
+    return len(keypoints)
 
 
 
@@ -82,17 +125,29 @@ async def run(sdk_conn):
     exposurex = Scale(mainWindow, from_=1, to=67, orient=HORIZONTAL, resolution=0.01)
     exposurex.grid(row=1, column=1)
 
-    Label(mainWindow, text="Hue").grid(row=2)
-    hue = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
-    hue.grid(row=2, column=1)
+    Label(mainWindow, text="Hue Lower").grid(row=2)
+    hueL = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    hueL.grid(row=2, column=1)
+    Label(mainWindow, text="Hue Upper").grid(row=3)
+    hueU = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    hueU.grid(row=3, column=1)
 
-    Label(mainWindow, text="Saturation").grid(row=3)
-    saturation = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
-    saturation.grid(row=3, column=1)
+    Label(mainWindow, text="Saturation Lower").grid(row=4)
+    saturationL = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    saturationL.grid(row=4, column=1)
+    Label(mainWindow, text="Saturation Upper").grid(row=6)
+    saturationU = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    saturationU.grid(row=6, column=1)
 
-    Label(mainWindow, text="Value").grid(row=4)
-    value = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
-    value.grid(row=4, column=1)
+    Label(mainWindow, text="Value Lower").grid(row=7)
+    valueL = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    valueL.grid(row=7, column=1)
+    Label(mainWindow, text="Value Upper").grid(row=8)
+    valueU = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    valueU.grid(row=8, column=1)
+
+    #imageView = Canvas();
+    #imageView.pack(side='top', fill='both', expand='yes')
 
 
 
@@ -104,19 +159,38 @@ async def run(sdk_conn):
     robot.camera.color_image_enabled = True
     robot.camera.enable_auto_exposure = True
 
-    gain,exposure,mode = 390,3,0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    #gain,exposure,mode = 390,3,0
+    mode = 0
 
     try:
 
         while True:
+            YELLOW_LOWER = np.array([hueL.get(), saturationL.get(), valueL.get()])
+            YELLOW_UPPER = np.array([hueU.get(), saturationU.get(), valueU.get()])
             exposure = exposurex.get()
             gain = gainx.get()
-            print(gainx, "    ",exposurex)
-         
-            event = await robot.world.wait_for(cozmo.camera.EvtNewRawCameraImage, timeout=30)   #get camera image
+            #print(gainx, "    ",exposurex)
+
+            event = await robot.world.wait_for(cozmo.camera.EvtNewRawCameraImage)   #get camera image
             if event.image is not None:
                 image = cv2.cvtColor(np.asarray(event.image), cv2.COLOR_BGR2RGB)
-
+                mask = filter_image(np.asanyarray(event.image),YELLOW_LOWER,YELLOW_UPPER)
+                cv2.imshow( "window", np.asanyarray(event.image ))
                 if mode == 1:
                     robot.camera.enable_auto_exposure = True
                 else:
@@ -132,20 +206,20 @@ async def run(sdk_conn):
                 # Todo: Add Motion Here
                 ################################################################
                 await robot.set_head_angle(degrees(0)).wait_for_completed()
-                look_around = robot.start_behavior(cozmo.behavior.BehaviorTypes.LookAroundInPlace)
-                try:
-                    cube = await robot.world.wait_for_observed_light_cube(timeout=30)
-                    print("Found cube: %s" % cube)
-                except asyncio.TimeoutError:
-                    print("Didn't find a cube")
-                finally:
-                    # whether we find it or not, we want to stop the behavior
-                    look_around.stop()
-                if cube:
-                    action = robot.go_to_object(cube, distance_mm(50.0))
-                    await action.wait_for_completed()
-                    print("Completed action: result = %s" % action)
-                    print("Done.")
+                #look_around = robot.start_behavior(cozmo.behavior.BehaviorTypes.LookAroundInPlace)
+                # try:
+                #     cube = await robot.world.wait_for_observed_light_cube(timeout=1)
+                #     print("Found cube: %s" % cube)
+                # except asyncio.TimeoutError:
+                #     print("Didn't find a cube")
+                # finally:
+                #     # whether we find it or not, we want to stop the behavior
+                #     look_around.stop()
+                # if cube:
+                #     action = robot.go_to_object(cube, distance_mm(50.0))
+                #     await action.wait_for_completed()
+                #     print("Completed action: result = %s" % action)
+                #     print("Done.")
 
 
 
@@ -163,9 +237,12 @@ def runCozmoRun():
     except:
         print("Unexpected error:", sys.exc_info())
 
+
+
+
 if __name__ == '__main__':
 
-
+    cv2.namedWindow("window",cv2.WINDOW_NORMAL)
     runCozmoRun()
 
 
