@@ -16,74 +16,26 @@ def filter_image(img, hsv_lower, hsv_upper):
     ### You might need to change the parameter values to get better results
     ###############################################################################
 def detect_blob(mask):
-    # img = cv2.medianBlur(mask, 11)
-    #
-    # # Set up the SimpleBlobdetector with default parameters with specific values.
-    # params = cv2.SimpleBlobDetector_Params()
-    #
-    # _, threshold = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY_INV)
-    #
-    # params.minThreshold = 10
-    # params.maxThreshold = 255
-    # params.filterByArea = True
-    # params.minArea = 200
-    # params.filterByInertia = False
-    # params.filterByConvexity = False
-    #
-    # # builds a blob detector with the given parameters
-    # detector = cv2.SimpleBlobDetector_create(params)
-    #
-    # # use the detector to detect blobs.
-    # keypoints = detector.detect(threshold)
-    img = 255 - mask#= cv2.medianBlur(255 - mask, 9)
-    #cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL )
-    #cv2.imshow("imagey",img)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
+     img = cv2.medianBlur(mask, 11)
+    
+     # Set up the SimpleBlobdetector with default parameters with specific values.
+     params = cv2.SimpleBlobDetector_Params()
+    
+     _, threshold = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY_INV)
 
-    # Set up the SimpleBlobdetector with default parameters with specific values.
-    params = cv2.SimpleBlobDetector_Params()
-
-    params.filterByColor = True
-
-    params.filterByArea = True
-    params.minArea = 30
-
-    params.filterByConvexity = False
-    params.minConvexity = 0.7
-    params.filterByCircularity = False
-    params.minCircularity = 0
-
-    # builds a blob detector with the given parameters
-    detector = cv2.SimpleBlobDetector_create(params)
-
-    # use the detector to detect blobs.
-    keypoints = detector.detect(img)
-    print("keypoints", keypoints)
-
-#    img = cv2.medianBlur(mask, 11)
-#   # Set up the SimpleBlobdetector with default parameters.
-#    params = cv2.SimpleBlobDetector_Params()
-#    # Change thresholds
-#    params.minThreshold = 0;
-#    params.maxThreshold = 256;
-#    #filter by color (on binary)
-#    params.filterByColor = True
-#    params.blobColor = 255  # this looks at binary image 0 for looking for dark areas
-#    # Filter by Area.
-#    params.filterByArea = True
-#    params.minArea = 200
-#    params.maxArea = 20000
-#    # Filter by Circularity
-#    params.filterByCircularity = False
-#    # Filter by Convexity
-#    params.filterByConvexity = False
-#    # Filter by Inertia
-#    params.filterByInertia = False
-#    detector = cv2.SimpleBlobDetector_create(params)
-#    # Detect blobs.
-#    keypoints = detector.detect(img)
-    return keypoints
+     params.minThreshold = 10
+     params.maxThreshold = 255
+     params.filterByArea = True
+     params.minArea = 200
+     params.filterByInertia = False
+     params.filterByConvexity = False
+    
+     # builds a blob detector with the given parameters
+     detector = cv2.SimpleBlobDetector_create(params)
+    
+     # use the detector to detect blobs.
+     keypoints = detector.detect(threshold)
+     return keypoints
 
 def find_cube(img, hsv_lower, hsv_upper):
     """Find the cube in an image.

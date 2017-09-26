@@ -23,11 +23,11 @@ def nothing(x):
 
 #YELLOW_LOWER = np.array([9, 115, 151])
 #YELLOW_UPPER = np.array([179, 215, 255])
-# YELLOW_LOWER = np.array([8, 115, 85])
-# YELLOW_UPPER = np.array([25, 240, 255])
+YELLOW_LOWER = np.array([8, 115, 85])
+YELLOW_UPPER = np.array([25, 240, 255])
 
-YELLOW_LOWER = np.array([71, 19, 206])
-YELLOW_UPPER = np.array([133, 94, 255])
+#YELLOW_LOWER = np.array([71, 19, 206])
+#YELLOW_UPPER = np.array([133, 94, 255])
 
 GREEN_LOWER = np.array([0,0,0])
 GREEN_UPPER = np.array([179, 255, 60])
@@ -69,7 +69,7 @@ async def run(robot: cozmo.robot.Robot):
     fixed_gain,exposure,mode = 3.90,67,0
 
     try:
-        await robot.set_head_angle(degrees(0)).wait_for_completed()
+        await robot.set_head_angle(degrees(-5)).wait_for_completed()
         while True:
             event = await robot.world.wait_for(cozmo.camera.EvtNewRawCameraImage, timeout=30)   #get camera image
             if event.image is not None:
