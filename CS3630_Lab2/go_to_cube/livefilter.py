@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 #!c:/Python35/python3.exe -u
-
 import asyncio
 import sys
 import cv2
@@ -8,8 +7,14 @@ import numpy as np
 import cozmo
 import time
 import os
+import _thread
 
 from cozmo.util import degrees, distance_mm
+
+from glob import glob
+
+from find_cube import *
+
 try:
     # for Python2
     from Tkinter import *   ## notice capitalized T in Tkinter
@@ -17,35 +22,26 @@ except ImportError:
     # for Python3
     from tkinter import *
 
-mainWindow = Tk()
+try:
+    from PIL import ImageDraw, ImageFont
+except ImportError:
+    sys.exit('run `pip3 install --user Pillow numpy` to run this example')
+def nothing(x):
+    pass
 
-Label(mainWindow, text="Gain").grid(row=0)
-gain = Scale(mainWindow, from_=0, to=500,orient=HORIZONTAL)
-gain.grid(row=0,column=1)
+YELLOW_LOWER = np.array([9, 115, 151])
+YELLOW_UPPER = np.array([179, 215, 255])
 
-Label(mainWindow, text="Exposure").grid(row=1)
-exposure = Scale(mainWindow, from_=0.1, to=4.0, orient=HORIZONTAL,resolution = 0.01)
-exposure.grid(row=1, column = 1)
-
-Label(mainWindow, text="Hue").grid(row=2)
-hue = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
-hue.grid(row=2, column = 1)
-
-Label(mainWindow, text="Saturation").grid(row=3)
-saturation = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
-saturation.grid(row=3, column = 1)
-
-Label(mainWindow, text="Value").grid(row=4)
-value = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
-value.grid(row=4, column = 1)
+GREEN_LOWER = np.array([0,0,0])
+GREEN_UPPER = np.array([179, 255, 60])
 
 
 
 
 
 
-mainloop()
 
+# Define a decorator as a subclass of Annotator; displays the keypoint
 class BoxAnnotator(cozmo.annotate.Annotator):
 
     cube = None
@@ -69,7 +65,37 @@ class BoxAnnotator(cozmo.annotate.Annotator):
             BoxAnnotator.cube = None
 
 
-async def run(robot: cozmo.robot.Robot):
+
+async def run(sdk_conn):
+    robot= await sdk_conn.wait_for_robot()
+
+    mainWindow = Toplevel()
+    coz = Tk()
+    cozmo.tkview.TkImageViewer(tk_root=coz)
+
+    Label(mainWindow, text="Gain").grid(row=0)
+
+    gainx = Scale(mainWindow, from_=0.2, to=3.9, orient=HORIZONTAL, resolution=0.01)
+    gainx.grid(row=0, column=1)
+
+    Label(mainWindow, text="Exposure").grid(row=1)
+    exposurex = Scale(mainWindow, from_=1, to=67, orient=HORIZONTAL, resolution=0.01)
+    exposurex.grid(row=1, column=1)
+
+    Label(mainWindow, text="Hue").grid(row=2)
+    hue = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    hue.grid(row=2, column=1)
+
+    Label(mainWindow, text="Saturation").grid(row=3)
+    saturation = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    saturation.grid(row=3, column=1)
+
+    Label(mainWindow, text="Value").grid(row=4)
+    value = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
+    value.grid(row=4, column=1)
+
+
+
 
     robot.world.image_annotator.annotation_enabled = False
     robot.world.image_annotator.add_annotator('box', BoxAnnotator)
@@ -78,14 +104,15 @@ async def run(robot: cozmo.robot.Robot):
     robot.camera.color_image_enabled = True
     robot.camera.enable_auto_exposure = True
 
-
+    gain,exposure,mode = 390,3,0
 
     try:
 
         while True:
-            gain, exposure, mode = 390, 3, 1
-
-
+            exposure = exposurex.get()
+            gain = gainx.get()
+            print(gainx, "    ",exposurex)
+         
             event = await robot.world.wait_for(cozmo.camera.EvtNewRawCameraImage, timeout=30)   #get camera image
             if event.image is not None:
                 image = cv2.cvtColor(np.asarray(event.image), cv2.COLOR_BGR2RGB)
@@ -93,7 +120,7 @@ async def run(robot: cozmo.robot.Robot):
                 if mode == 1:
                     robot.camera.enable_auto_exposure = True
                 else:
-                    robot.camera.set_manual_exposure(exposure,fixed_gain)
+                    robot.camera.set_manual_exposure(exposure,gain)
 
                 #find the cube
                 cube = find_cube(image, YELLOW_LOWER, YELLOW_UPPER)
@@ -128,6 +155,18 @@ async def run(robot: cozmo.robot.Robot):
     except cozmo.RobotBusy as e:
         print(e)
     #cv2.destroyAllWindows()
+def runCozmoRun():
+    try:
+
+        cozmo.connect_with_tkviewer(run)
+
+    except:
+        print("Unexpected error:", sys.exc_info())
 
 if __name__ == '__main__':
-    cozmo.run_program(run, use_viewer = True, force_viewer_on_top = True)
+
+
+    runCozmoRun()
+
+
+
