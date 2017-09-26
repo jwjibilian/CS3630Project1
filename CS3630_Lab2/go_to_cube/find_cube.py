@@ -4,33 +4,62 @@ import time
 
 def filter_image(img, hsv_lower, hsv_upper):
 #    img_filt = cv2.medianBlur(img, 5)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, hsv_lower, hsv_upper)
+#     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+#     mask = cv2.inRange(hsv, hsv_lower, hsv_upper)
+
+    imgToBlur = cv2.medianBlur(img, 5)
+    imagehsv = cv2.cvtColor(imgToBlur, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(imagehsv, hsv_lower, hsv_upper)
     return mask
 
     ###############################################################################
     ### You might need to change the parameter values to get better results
     ###############################################################################
 def detect_blob(mask):
-    img = cv2.medianBlur(mask, 11)
+    # img = cv2.medianBlur(mask, 11)
+    #
+    # # Set up the SimpleBlobdetector with default parameters with specific values.
+    # params = cv2.SimpleBlobDetector_Params()
+    #
+    # _, threshold = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY_INV)
+    #
+    # params.minThreshold = 10
+    # params.maxThreshold = 255
+    # params.filterByArea = True
+    # params.minArea = 200
+    # params.filterByInertia = False
+    # params.filterByConvexity = False
+    #
+    # # builds a blob detector with the given parameters
+    # detector = cv2.SimpleBlobDetector_create(params)
+    #
+    # # use the detector to detect blobs.
+    # keypoints = detector.detect(threshold)
+    img = 255 - mask#= cv2.medianBlur(255 - mask, 9)
+    #cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL )
+    #cv2.imshow("imagey",img)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
     # Set up the SimpleBlobdetector with default parameters with specific values.
     params = cv2.SimpleBlobDetector_Params()
 
-    _, threshold = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY_INV)
+    params.filterByColor = True
 
-    params.minThreshold = 10
-    params.maxThreshold = 255
     params.filterByArea = True
-    params.minArea = 200
-    params.filterByInertia = False
+    params.minArea = 30
+
     params.filterByConvexity = False
+    params.minConvexity = 0.7
+    params.filterByCircularity = False
+    params.minCircularity = 0
 
     # builds a blob detector with the given parameters
     detector = cv2.SimpleBlobDetector_create(params)
 
     # use the detector to detect blobs.
-    keypoints = detector.detect(threshold)
+    keypoints = detector.detect(img)
+    print("keypoints", keypoints)
 
 #    img = cv2.medianBlur(mask, 11)
 #   # Set up the SimpleBlobdetector with default parameters.

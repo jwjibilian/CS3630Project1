@@ -38,50 +38,50 @@ GREEN_UPPER = np.array([179, 255, 60])
 makeImage = 0
 
 
-def filter_image(img, hsv_lower, hsv_upper):
+# def filter_image(img, hsv_lower, hsv_upper):
+#
+#     # Modify mask
+#     imgToBlur = cv2.medianBlur(img,5)
+#     imagehsv = cv2.cvtColor(imgToBlur, cv2.COLOR_BGR2HSV)
+#     mask = cv2.inRange(imagehsv,hsv_lower,hsv_upper)
+#     image2 = cv2.bitwise_and(255-img, 255-img, mask = mask)
+#     #cv2.namedWindow( "imagex", cv2.WINDOW_NORMAL );
+#     #cv2.imshow("imagex", image2)
+#     #cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL );
+#     #cv2.imshow("imagey",img)
+#     #cv2.waitKey(0)
+#     #cv2.destroyAllWindows()
+#     return mask
 
-    # Modify mask
-    imgToBlur = cv2.medianBlur(img,5)
-    imagehsv = cv2.cvtColor(imgToBlur, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(imagehsv,hsv_lower,hsv_upper)
-    image2 = cv2.bitwise_and(255-img, 255-img, mask = mask)
-    #cv2.namedWindow( "imagex", cv2.WINDOW_NORMAL );
-    #cv2.imshow("imagex", image2)
-    #cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL );
-    #cv2.imshow("imagey",img)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
-    return mask
-
-
-def detect_blob(mask):
-    img = cv2.medianBlur(255 - mask, 9)
-    # cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL )
-    # cv2.imshow("imagey",img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    # Set up the SimpleBlobdetector with default parameters with specific values.
-    params = cv2.SimpleBlobDetector_Params()
-
-    params.filterByColor = True
-
-    params.filterByArea = True
-    params.minArea = 500
-
-    params.filterByConvexity = False
-    params.minConvexity = 0.7
-    params.filterByCircularity = False
-    params.minCircularity = 0
-
-    # builds a blob detector with the given parameters
-    detector = cv2.SimpleBlobDetector_create(params)
-
-    # use the detector to detect blobs.
-    keypoints = detector.detect(img)
-    print("keypoints", keypoints)
-
-    return len(keypoints)
+#
+# def detect_blob(mask):
+#     img = cv2.medianBlur(255 - mask, 9)
+#     # cv2.namedWindow( "imagey", cv2.WINDOW_NORMAL )
+#     # cv2.imshow("imagey",img)
+#     # cv2.waitKey(0)
+#     # cv2.destroyAllWindows()
+#
+#     # Set up the SimpleBlobdetector with default parameters with specific values.
+#     params = cv2.SimpleBlobDetector_Params()
+#
+#     params.filterByColor = True
+#
+#     params.filterByArea = True
+#     params.minArea = 10
+#
+#     params.filterByConvexity = False
+#     params.minConvexity = 0.7
+#     params.filterByCircularity = False
+#     params.minCircularity = 0
+#
+#     # builds a blob detector with the given parameters
+#     detector = cv2.SimpleBlobDetector_create(params)
+#
+#     # use the detector to detect blobs.
+#     keypoints = detector.detect(img)
+#     print("keypoints", keypoints)
+#
+#     return len(keypoints)
 
 
 
@@ -203,6 +203,7 @@ async def run(sdk_conn):
                 im = Image.fromarray(cv2.bitwise_and(image,image,mask = mask))
                 imgtk = ImageTk.PhotoImage(image=im)
                 l.configure(image = imgtk)
+                detect_blob(mask)
                 # if (makeImage == 1):
                 #     print("makeing window?")
                 #

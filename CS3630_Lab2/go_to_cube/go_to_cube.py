@@ -23,11 +23,11 @@ def nothing(x):
 
 #YELLOW_LOWER = np.array([9, 115, 151])
 #YELLOW_UPPER = np.array([179, 215, 255])
-YELLOW_LOWER = np.array([8, 115, 85])
-YELLOW_UPPER = np.array([25, 240, 255])
+# YELLOW_LOWER = np.array([8, 115, 85])
+# YELLOW_UPPER = np.array([25, 240, 255])
 
-# YELLOW_LOWER = np.array([75, 94, 199])
-# YELLOW_UPPER = np.array([109, 240, 255])
+YELLOW_LOWER = np.array([71, 19, 206])
+YELLOW_UPPER = np.array([133, 94, 255])
 
 GREEN_LOWER = np.array([0,0,0])
 GREEN_UPPER = np.array([179, 255, 60])
@@ -66,7 +66,7 @@ async def run(robot: cozmo.robot.Robot):
     robot.camera.color_image_enabled = True
     robot.camera.enable_auto_exposure = True
 
-    gain,exposure,mode = 390,3,1
+    fixed_gain,exposure,mode = 3.90,67,0
 
     try:
         await robot.set_head_angle(degrees(0)).wait_for_completed()
@@ -95,20 +95,20 @@ async def run(robot: cozmo.robot.Robot):
 
                 # Todo: Add Motion Here
                 ################################################################
-#                if cube and cube[0] < 120:
-#                    action = robot.turn_in_place(radians(0.1))
-#                    await action.wait_for_completed()
-#                elif cube and cube[0] > 180:
-#                    action = robot.turn_in_place(radians(-0.1))
-#                    await action.wait_for_completed()
-#                elif cube and cube[2] < 120:
-#                    action = robot.drive_straight(distance_mm(30), Speed(1000), should_play_anim=False)
-#                    await action.wait_for_completed()
-#                elif cube and cube[2] >= 120:
-#                    print("stop")
-#                else:
-#                    action = robot.turn_in_place(radians(0.3))
-#                    await action.wait_for_completed()
+                if cube and cube[0] < 120:
+                    action = robot.turn_in_place(radians(0.1))
+                    await action.wait_for_completed()
+                elif cube and cube[0] > 180:
+                    action = robot.turn_in_place(radians(-0.1))
+                    await action.wait_for_completed()
+                elif cube and cube[2] < 120:
+                    action = robot.drive_straight(distance_mm(30), Speed(1000), should_play_anim=False)
+                    await action.wait_for_completed()
+                elif cube and cube[2] >= 120:
+                   print("stop")
+                else:
+                    action = robot.turn_in_place(radians(0.3))
+                    await action.wait_for_completed()
 
 
 
