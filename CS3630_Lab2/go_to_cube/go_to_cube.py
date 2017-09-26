@@ -26,6 +26,9 @@ def nothing(x):
 YELLOW_LOWER = np.array([8, 115, 85])
 YELLOW_UPPER = np.array([25, 240, 255])
 
+# YELLOW_LOWER = np.array([75, 94, 199])
+# YELLOW_UPPER = np.array([109, 240, 255])
+
 GREEN_LOWER = np.array([0,0,0])
 GREEN_UPPER = np.array([179, 255, 60])
 

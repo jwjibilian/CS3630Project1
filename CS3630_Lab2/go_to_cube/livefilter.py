@@ -10,6 +10,7 @@ import os
 import _thread
 import cv2
 
+
 from cozmo.util import degrees, distance_mm
 
 from glob import glob
@@ -24,7 +25,7 @@ except ImportError:
     from tkinter import *
 
 try:
-    from PIL import ImageDraw, ImageFont
+    from PIL import ImageDraw, ImageFont, Image, ImageTk
 except ImportError:
     sys.exit('run `pip3 install --user Pillow numpy` to run this example')
 def nothing(x):
@@ -34,7 +35,7 @@ def nothing(x):
 
 GREEN_LOWER = np.array([0,0,0])
 GREEN_UPPER = np.array([179, 255, 60])
-
+makeImage = 0
 
 
 def filter_image(img, hsv_lower, hsv_upper):
@@ -107,6 +108,9 @@ class BoxAnnotator(cozmo.annotate.Annotator):
 
             BoxAnnotator.cube = None
 
+def buttonclick():
+    global makeImage
+    makeImage= 1
 
 
 async def run(sdk_conn):
@@ -146,9 +150,13 @@ async def run(sdk_conn):
     valueU = Scale(mainWindow, from_=0, to=255, orient=HORIZONTAL)
     valueU.grid(row=8, column=1)
 
+
+    b = Button(mainWindow, text="filter", command = buttonclick)
+    b.grid(row=9, column = 0)
     #imageView = Canvas();
     #imageView.pack(side='top', fill='both', expand='yes')
-
+    l = Label(mainWindow)
+    l.grid(row=10, column=0)
 
 
 
@@ -159,7 +167,7 @@ async def run(sdk_conn):
     robot.camera.color_image_enabled = True
     robot.camera.enable_auto_exposure = True
 
-
+    global makeImage
 
 
 
@@ -190,7 +198,17 @@ async def run(sdk_conn):
             if event.image is not None:
                 image = cv2.cvtColor(np.asarray(event.image), cv2.COLOR_BGR2RGB)
                 mask = filter_image(np.asanyarray(event.image),YELLOW_LOWER,YELLOW_UPPER)
-                cv2.imshow( "window", np.asanyarray(event.image ))
+                #b,g,r = cv2.split(mask)
+                #display = cv2.merge((mask))
+                im = Image.fromarray(cv2.bitwise_and(image,image,mask = mask))
+                imgtk = ImageTk.PhotoImage(image=im)
+                l.configure(image = imgtk)
+                # if (makeImage == 1):
+                #     print("makeing window?")
+                #
+                #     cv2.namedWindow("window",cv2.WINDOW_NORMAL)
+                #     cv2.imshow( "window", mask)
+                #     makeImage=0
                 if mode == 1:
                     robot.camera.enable_auto_exposure = True
                 else:
